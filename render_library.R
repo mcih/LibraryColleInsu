@@ -55,7 +55,7 @@ data <- reactiveValues(
 
 stageLevel1Obs <- observe({
 
-  df <- data.table(readxl::read_excel(paste0(base.dir, "/books.xlsx")))
+  df <- data.table(readxl::read_excel(paste0(data.dir, "books.xlsx")))
   data$source = df
 
   
@@ -206,7 +206,7 @@ observeEvent(input$confirmActionButtonLabel, {
  
   
   
-  writexl::write_xlsx(rbind(data$source, feedback), paste0(base.dir, "/books.xlsx"))
+  writexl::write_xlsx(rbind(data$source, feedback), paste0(data.dir, "books.xlsx"))
   }
 })
 observeEvent(input$closeModalDialogLabel, {

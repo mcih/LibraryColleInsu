@@ -1,4 +1,5 @@
 
 debugMode <- FALSE
 
-base.dir <- "Desktop/LibraryColleInsu/data"
+base.dir <- "C:/Users/HP/Documents/LibraryColleInsu/"
+data.dir <- "C:/Users/HP/Documents/LibraryColleInsu/data/"

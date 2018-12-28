@@ -15,7 +15,7 @@ library(readxl)
 library(writexl)
 library(clipr)
 
-source("global.R")
+source(paste0(base.dir,"global.R"))
 shinyServer(function(input, output, session) {
   
   output$sidebar_ui <- renderUI({
@@ -27,5 +27,5 @@ shinyServer(function(input, output, session) {
   })
 
 
-  source("render_library.R", local=TRUE)$value
+  source(paste0(base.dir,"render_library.R"), local=TRUE)$value
 })
