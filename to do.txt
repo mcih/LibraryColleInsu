@@ -1,0 +1,18 @@
+- aggiungere nuovi filtri
+- modifica vecchie entries
+
+library(shinyshortcut)
+shinyShortcut(shinyDirectory = getwd())
+
+
+CREARE ACCOUNT GIT
+- istallare R e Rstudio e Rtools
+- settare le variabili d'ambiente
+- scaricare e istallare tortoise git
+- creare account github.com
+- generare public key e caricarela sul profilo
+- clonare repository git@github.com:mcih/LibraryColleInsu.git
+
+- http://r-pkgs.had.co.nz/git.html
+- https://stackoverrun.com/it/q/2654468
+
