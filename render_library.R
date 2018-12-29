@@ -1,42 +1,3 @@
-############
-## Fixed UI
-############
-
-output$library_ui <- renderUI({
-  fluidPage(
-    mainPanel(width = 12, 
-              fluidRow(
-                column(2, actionButton("newEntry", width = "75px", icon("plus"), style="color: #fff; background-color: #2E8B57; border-color: #00A572")),
-                hr(''),
-                box(width = 12,title = "Ricerca", collapsible = T, collapsed = F, solidHeader = T, status = "primary",
-                    column(12, textInput(inputId = "titol", label = "Titolo", value = "", width = NULL)),
-                    column(6, selectizeInput("author", "Autore", choices = c("All", unique(data$source$AUTORE)), selected = "All", multiple = T)),
-                    column(6, selectizeInput("editor", "Casa editrice", choices = c("All", unique(data$source$CASA_EDITRICE)), selected = "All", multiple = T)),
-                    column(6, selectizeInput("year", "Anno pubblicazione", choices = c("All", unique(data$source$ANNO_PUBBLICAZIONE)), selected = "All", multiple = T)), 
-                    column(6, selectizeInput("language", "Lingua", choices = c("All", unique(data$source$LINGUA)), selected = "All", multiple = T)),
-                    column(6, selectizeInput("location", "Collocazione principale", choices = c("All", unique(data$source$COLLOCAZIONE_PRINCIPALE)), selected = "All", multiple = T)), 
-                    column(6, selectizeInput("genere", "Genere", choices = c("All", unique(data$source$GENERE)), selected = "All", multiple = T)),
-                    
-                    column(12, checkboxGroupInput("show_vars", "Colonne da mostrare:",
-                       c("SOTTOTITOLO", "TITOLO ORIGINALE", "SERIE", "NUMERO SERIE", "COLLANA", 
-                         "ANNO PRIMA EDIZIONE", "PAGINE", "DESCRIZIONE", "GENERE", "LINGUA", "PROPRIETARIO", 
-                         "PRESTITO", "PRESTATO A", "ISBN"), selected = "", inline = T)),
-                    shinydashboard::box(
-                      title = "Select deviation to explore", width = 12, status = "info",
-                      solidHeader = TRUE, collapsible = TRUE, collapsed = FALSE,
-                      div(style = 'overflow-x: scroll', DT::dataTableOutput('Table'))
-                    )           
-                              )                )
-   ),
-    fixedPanel(
-      conditionalPanel(
-        condition="($('html').hasClass('shiny-busy'))", 
-        img(src='ajax_loader_green_128.gif')
-      )
-      ,top = 300, left = 400, right = 0)
-    )
-})
-
 
 #################
 ## Reactive data
@@ -87,6 +48,13 @@ stageLevel1Obs <- observe({
   if(!"All" %in% selectedLoc & !"empty" %in% selectedLoc)
     df <- df[as.character(COLLOCAZIONE_PRINCIPALE) %in% selectedLoc,]
   
+  #filter on traslator
+  selectedTransl <- input$transl
+  if(is.null(selectedTransl))
+    return(NULL)
+  if(!"All" %in% selectedTransl & !"empty" %in% selectedTransl)
+    df <- df[as.character(TRADUTTORE) %in% selectedTransl,]
+  
   #filter on year
   selectedYear <- input$year
   if(is.null(selectedYear))
@@ -94,12 +62,26 @@ stageLevel1Obs <- observe({
   if(!"All" %in% selectedYear & !"empty" %in% selectedYear) 
     df <- df[as.character(ANNO_PUBBLICAZIONE) %in% selectedYear,]
   
+  #filter on original year
+  selectedYearOrig <- input$yearOrig
+  if(is.null(selectedYearOrig))
+    return(NULL)
+  if(!"All" %in% selectedYearOrig & !"empty" %in% selectedYearOrig) 
+    df <- df[as.character(PRIMA_EDIZIONE) %in% selectedYearOrig,]
+  
   #filter on genere
   selectedGen <- input$genere
   if(is.null(selectedGen))
     return(NULL)
   if(!"All" %in% selectedGen & !"empty" %in% selectedGen) 
     df <- df[as.character(GENERE) %in% selectedGen,]
+
+  #filter on series
+  selectedSeries <- input$series
+  if(is.null(selectedSeries))
+    return(NULL)
+  if(!"All" %in% selectedSeries & !"empty" %in% selectedSeries) 
+    df <- df[as.character(SERIE_LIBRI) %in% selectedSeries,]
   
   #filter title
   selectedTitle <- as.character(input$titol)
@@ -124,6 +106,78 @@ stageLevel1Obs <- observe({
       df = df[which(Reduce(`&`, lapply(strsplit(selectedTitle,"&")[[1]], grepl, paste0(" ", df$TITOLO),ignore.case=T))), ]
     }
   }
+  
+  #filter original title
+  selectedTitleOrig <- as.character(input$titolOrig)
+  if(is.null(selectedTitleOrig))
+    return(NULL)
+  if(selectedTitleOrig == "")
+    df
+  else{
+    if(length(grep("\\|", selectedTitleOrig)) > 0 |
+       (length(grep(",", selectedTitleOrig)) == 0 &
+        length(grep("&", selectedTitleOrig)) == 0)){
+      selectedTitleOrig = paste(unlist(lapply(strsplit(selectedTitleOrig,"\\|")[[1]], 
+                function(x) gsub(" \\*|\\* ", "", paste0(" ", x, " ")))), collapse = "|")
+      df = df[which(Reduce(`|`, lapply(strsplit(selectedTitleOrig,"\\|")[[1]], grepl, paste0(" ", df$TITOLO_ORIGINALE),ignore.case=T))), ]
+    }else if(length(grep(",", selectedTitleOrig)) > 0){
+      selectedTitleOrig = paste(unlist(lapply(strsplit(selectedTitleOrig,",")[[1]], 
+                function(x) gsub(" \\*|\\* ", "", paste0(" ", x, " ")))), collapse = ",")
+      df = df[which(Reduce(`&`, lapply(strsplit(selectedTitleOrig,",")[[1]], grepl, paste0(" ", df$TITOLO_ORIGINALE),ignore.case=T))), ]
+    }else if(length(grep("&", selectedTitleOrig)) > 0){
+      selectedTitleOrig = paste(unlist(lapply(strsplit(selectedTitleOrig,"&")[[1]], 
+                function(x) gsub(" \\*|\\* ", "", paste0(" ", x, " ")))), collapse = "&")
+      df = df[which(Reduce(`&`, lapply(strsplit(selectedTitleOrig,"&")[[1]], grepl, paste0(" ", df$TITOLO_ORIGINALE),ignore.case=T))), ]
+    }
+  }
+  
+  #filter on sottotitolo
+  selectedSotto <- as.character(input$sottotitol)
+  if(is.null(selectedSotto))
+    return(NULL)
+  if(selectedSotto == "")
+    df
+  else{
+    if(length(grep("\\|", selectedSotto)) > 0 |
+       (length(grep(",", selectedSotto)) == 0 &
+        length(grep("&", selectedSotto)) == 0)){
+      selectedSotto = paste(unlist(lapply(strsplit(selectedSotto,"\\|")[[1]], 
+                   function(x) gsub(" \\*|\\* ", "", paste0(" ", x, " ")))), collapse = "|")
+      df = df[which(Reduce(`|`, lapply(strsplit(selectedSotto,"\\|")[[1]], grepl, paste0(" ", df$SOTTOTITOLO),ignore.case=T))), ]
+    }else if(length(grep(",", v)) > 0){
+      selectedSotto = paste(unlist(lapply(strsplit(selectedSotto,",")[[1]], 
+                   function(x) gsub(" \\*|\\* ", "", paste0(" ", x, " ")))), collapse = ",")
+      df = df[which(Reduce(`&`, lapply(strsplit(selectedSotto,",")[[1]], grepl, paste0(" ", df$SOTTOTITOLO),ignore.case=T))), ]
+    }else if(length(grep("&", selectedSotto)) > 0){
+      selectedSotto = paste(unlist(lapply(strsplit(selectedSotto,"&")[[1]], 
+                   function(x) gsub(" \\*|\\* ", "", paste0(" ", x, " ")))), collapse = "&")
+      df = df[which(Reduce(`&`, lapply(strsplit(selectedSotto,"&")[[1]], grepl, paste0(" ", df$SOTTOTITOLO),ignore.case=T))), ]
+    }
+  }
+  
+  #filter on sottotitolo
+  selecteTag <- as.character(input$tag)
+  if(is.null(selecteTag))
+    return(NULL)
+  if(selecteTag == "")
+    df
+  else{
+    if(length(grep("\\|", selecteTag)) > 0 |
+       (length(grep(",", selecteTag)) == 0 &
+        length(grep("&", selecteTag)) == 0)){
+      selecteTag = paste(unlist(lapply(strsplit(selecteTag,"\\|")[[1]], 
+                   function(x) gsub(" \\*|\\* ", "", paste0(" ", x, " ")))), collapse = "|")
+      df = df[which(Reduce(`|`, lapply(strsplit(selecteTag,"\\|")[[1]], grepl, paste0(" ", df$TAG),ignore.case=T))), ]
+    }else if(length(grep(",", v)) > 0){
+      selecteTag = paste(unlist(lapply(strsplit(selecteTag,",")[[1]], 
+                   function(x) gsub(" \\*|\\* ", "", paste0(" ", x, " ")))), collapse = ",")
+      df = df[which(Reduce(`&`, lapply(strsplit(selecteTag,",")[[1]], grepl, paste0(" ", df$TAG),ignore.case=T))), ]
+    }else if(length(grep("&", selecteTag)) > 0){
+      selecteTag = paste(unlist(lapply(strsplit(selecteTag,"&")[[1]], 
+                   function(x) gsub(" \\*|\\* ", "", paste0(" ", x, " ")))), collapse = "&")
+      df = df[which(Reduce(`&`, lapply(strsplit(selecteTag,"&")[[1]], grepl, paste0(" ", df$TAG),ignore.case=T))), ]
+    }
+  } 
   
   setnames(df, old = c("CASA_EDITRICE","COLLOCAZIONE_PRINCIPALE", "A_CHI", "SERIE_LIBRI", 
                        "NUMERO_SERIE", "PRIMA_EDIZIONE", "ANNO_PUBBLICAZIONE", "NUMERO_INVENTARIO", "TITOLO_ORIGINALE"),
