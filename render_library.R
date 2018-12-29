@@ -5,7 +5,8 @@
 
 data <- reactiveValues(
   source = NULL, 
-  theData = NULL
+  theData = NULL, 
+  modified = NULL
 )
 
 
@@ -18,6 +19,7 @@ stageLevel1Obs <- observe({
 
   df <- data.table(readxl::read_excel(paste0(data.dir, "books.xlsx")))
   data$source = df
+  data$modified = df
 
   
   #filter on author
@@ -267,6 +269,43 @@ observeEvent(input$closeModalDialogLabel, {
   removeModal()
 })
 
+observeEvent(input$Table_cell_edit, {
+  info = input$Table_cell_edit
+  browser
+  str(info)
+  i = info$row
+  j = info$col + 1  # column index offset by 1
+  v = info$value 
+  
+  df = data$theData
+  dfsource = data$modified
+  
+  setnames(dfsource, old = c("CASA_EDITRICE","COLLOCAZIONE_PRINCIPALE", "A_CHI", "SERIE_LIBRI", 
+                       "NUMERO_SERIE", "PRIMA_EDIZIONE", "ANNO_PUBBLICAZIONE", "NUMERO_INVENTARIO", "TITOLO_ORIGINALE"),
+           new = c("CASA EDITRICE","COLLOCAZIONE PRINCIPALE", "PRESTATO A", "SERIE", "NUMERO SERIE", 
+                   "ANNO PRIMA EDIZIONE", "ANNO PUBBLICAZIONE", "NUMERO INVENTARIO", "TITOLO ORIGINALE"))
+  
+  cols = c("AUTORE", "TITOLO", "TRADUTTORE", "CASA EDITRICE", "ANNO PUBBLICAZIONE", 
+                    "COLLOCAZIONE PRINCIPALE", "TAG", "NUMERO INVENTARIO", input$show_vars)
+  col = which(names(dfsource) == cols[j])
+  row = which(dfsource$`NUMERO INVENTARIO` == df$`NUMERO INVENTARIO`[i])
+    
+  dfsource[row, col] <- v
+
+  setnames(dfsource, old =  c("CASA EDITRICE","COLLOCAZIONE PRINCIPALE", "PRESTATO A", "SERIE", "NUMERO SERIE", 
+                              "ANNO PRIMA EDIZIONE", "ANNO PUBBLICAZIONE", "NUMERO INVENTARIO", "TITOLO ORIGINALE"), 
+           new = c("CASA_EDITRICE","COLLOCAZIONE_PRINCIPALE", "A_CHI", "SERIE_LIBRI", 
+                             "NUMERO_SERIE", "PRIMA_EDIZIONE", "ANNO_PUBBLICAZIONE", "NUMERO_INVENTARIO", "TITOLO_ORIGINALE"))
+  
+  data$modified = dfsource
+})
+
+
+observeEvent(input$modifyEntry, {
+  writexl::write_xlsx(data$modified, paste0(data.dir, "books.xlsx"))
+  
+})
+
 ###########
 ## Outputs
 ###########
@@ -279,7 +318,7 @@ output$Table <- DT::renderDataTable({
            "COLLOCAZIONE PRINCIPALE", "TAG", "NUMERO INVENTARIO", input$show_vars)
 
    DT::datatable(
-    df[, cols, with = F],
+    df[, cols, with = F],class = 'cell-border stripe',editable =T,
     selection = list(mode="single", selected = c(1)), 
     filter = list(position = 'none'), 
     options = list(pageLength = 20, 

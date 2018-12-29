@@ -34,6 +34,7 @@ output$library_ui <- renderUI({
      mainPanel(width = 12, 
                fluidRow(
                column(2, actionButton("newEntry", width = "75px", icon("plus"), style="color: #fff; background-color: #2E8B57; border-color: #00A572")),
+               column(2, actionButton("modifyEntry", width = "75px", icon("save"), style="color: #fff; background-color: #FF0800; border-color: #B80F0A")),
                hr(''),
                box(width = 12,title = "Ricerca", collapsible = T, collapsed = F, solidHeader = T, status = "primary",
                     column(12, textInput(inputId = "titol", label = "Titolo", value = "", width = NULL)),
@@ -48,15 +49,15 @@ output$library_ui <- renderUI({
                     column(6, selectizeInput("language", "Lingua", choices = c("All", unique(data$source$LINGUA)[which(!is.na(unique(data$source$LINGUA)))]), selected = "All", multiple = T)),
                     column(6, selectizeInput("location", "Collocazione principale", choices = c("All", unique(data$source$COLLOCAZIONE_PRINCIPALE)[which(!is.na(unique(data$source$COLLOCAZIONE_PRINCIPALE)))]), selected = "All", multiple = T)), 
                     column(6, selectizeInput("genere", "Genere", choices = c("All", unique(data$source$GENERE)[which(!is.na(unique(data$source$GENERE)))]), selected = "All", multiple = T)),
-                    column(6, textInput(inputId = "tag", label = "Tags", value = "", width = NULL)),
-                   
-                    column(12, checkboxGroupInput("show_vars", "Colonne da mostrare:",
+                    column(6, textInput(inputId = "tag", label = "TAGs", value = "", width = NULL))
+               ),
+                fluidRow( column(12, checkboxGroupInput("show_vars", "Colonne da mostrare:",
                                                   c("SOTTOTITOLO", "TITOLO ORIGINALE", "SERIE", "NUMERO SERIE", "COLLANA", 
                                                       "ANNO PRIMA EDIZIONE", "PAGINE", "DESCRIZIONE", "GENERE", "LINGUA", "PROPRIETARIO", 
                                                       "PRESTITO", "PRESTATO A", "ISBN"), selected = "", inline = T)),
                     shinydashboard::box(
-                        title = "Select deviation to explore", width = 12, status = "info",
-                        solidHeader = TRUE, collapsible = TRUE, collapsed = FALSE,
+                        title = "Select deviation to explore", width = 12, status = "info", 
+                        solidHeader = TRUE, collapsible = TRUE, collapsed = FALSE, 
                         div(style = 'overflow-x: scroll', DT::dataTableOutput('Table'))
                       )           
                   )                )

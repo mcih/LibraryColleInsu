@@ -1,5 +1,4 @@
-- aggiungere nuovi filtri
-- modifica vecchie entries
+- push and pull
 
 library(shinyshortcut)
 shinyShortcut(shinyDirectory = getwd())
