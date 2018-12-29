@@ -306,6 +306,48 @@ observeEvent(input$modifyEntry, {
   
 })
 
+observeEvent(input$sendRequest, {
+  showModal(dataModalSendRequest())
+})
+dataModalSendRequest <- function(failed = FALSE) {
+  modalDialog(
+    title = "Inserire i dettagli della richiesta",
+    textInput(inputId = "sender", "MITTENTE", ""), 
+    textInput(inputId = "recipient", "DESTINATARIO", ""),
+    textInput(inputId = "subject", "OGGETTO", ""),
+    textInput(inputId = "body", "TESTO", ""),
+  
+    column(5, actionButton(inputId = "confirmActionButtonRequest", label = "Confirm"), align = "left"), 
+    column(5, actionButton(inputId = "closeModalDialogRequest", label = "Close"), align = "right"),
+    footer = "", easyClose = TRUE, size = "m"
+    
+  )
+}  
+observeEvent(input$confirmActionButtonRequest, {
+  if(!is.null(input$confirmActionButtonRequest)){ 
+    sender <- input$sender
+    recipient <- input$recipient
+    sub <- input$subject
+    body <- input$body
+
+    send.mail(from = sender,
+              to = recipient,
+              subject = sub,
+              body = "Body of the email",              
+              smtp = list(host.name = "aspmx.l.google.com", port = 25),
+              authenticate = FALSE,
+              send = TRUE)
+    
+    removeModal()
+    }
+})
+observeEvent(input$closeModalDialogRequest, {
+  removeModal()
+})
+
+
+
+
 ###########
 ## Outputs
 ###########

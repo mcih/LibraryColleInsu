@@ -5,7 +5,7 @@ shinyShortcut(shinyDirectory = getwd())
 
 
 CREARE ACCOUNT GIT
-- istallare R e Rstudio e Rtools
+- istallare R e Rstudio e Rtools e Java
 - settare le variabili d'ambiente
 - scaricare e istallare tortoise git
 - creare account github.com
