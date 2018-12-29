@@ -346,8 +346,16 @@ observeEvent(input$closeModalDialogRequest, {
 })
 
 
+observeEvent(input$pull, {
+   system2("git", "pull origin master", stdout = TRUE, stderr = TRUE)
+})
 
-
+# observeEvent(input$push, {
+#   browser()
+#   system2("git", "add index.html data/books.xlsx", stdout = TRUE, stderr = TRUE)
+#   system2("git", "commit data/books.xlsx", stdout = TRUE, stderr = TRUE)
+#   system2("git", "push origin master", stdout = TRUE, stderr = TRUE)
+# })
 ###########
 ## Outputs
 ###########

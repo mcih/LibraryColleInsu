@@ -35,8 +35,10 @@ output$library_ui <- renderUI({
      mainPanel(width = 12, 
                fluidRow(
                column(2, actionButton("newEntry", width = "75px", icon("plus"), style="color: #fff; background-color: #2E8B57; border-color: #00A572")),
-               column(2, actionButton("modifyEntry", width = "75px", icon("save"), style="color: #fff; background-color: #FF0800; border-color: #B80F0A")),
+               column(2, actionButton("modifyEntry", width = "75px", icon("save"), style="color: #fff; background-color: #337ab7; border-color: #2e6da4")),
                column(2, actionButton("sendRequest", width = "75px", icon("at"), style="color: #fff;  background-color: #337ab7; border-color: #2e6da4")),
+               column(2, actionButton("pull", width = "75px", icon("download"), style="color: #fff;  background-color: #FF0800; border-color: #B80F0A")),
+               column(2, actionButton("push", width = "75px", icon("upload"), style="color: #fff;  background-color: #FF0800; border-color: #B80F0A")),
                hr(''),
                box(width = 12,title = "Ricerca", collapsible = T, collapsed = F, solidHeader = T, status = "primary",
                     column(12, textInput(inputId = "titol", label = "Titolo", value = "", width = NULL)),
